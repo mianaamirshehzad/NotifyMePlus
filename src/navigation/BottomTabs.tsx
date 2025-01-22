@@ -10,7 +10,7 @@ const Tab = createBottomTabNavigator();
 
 const BottomTabs = () => {
   return (
-      <Tab.Navigator>
+      <Tab.Navigator screenOptions={{ headerShown: false }} >
         <Tab.Screen name="Notify" component={NotificationScreen} />
         <Tab.Screen name="Image" component={ProfileScreen} />
         <Tab.Screen name="Notes" component={NotesScreen} />
