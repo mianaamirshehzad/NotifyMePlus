@@ -1,76 +1,89 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, Button, FlatList } from 'react-native';
+import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 
 const NotesScreen: React.FC = () => {
-  const [note, setNote] = useState<string>('');
-  const [notes, setNotes] = useState<Array<{ id: string, text: string }>>([]);
+    const [text, setText] = useState('');
+    const [messages, setMessages] = useState([]);
 
-  // useEffect(() => {
-  //   const unsubscribe = firestore()
-  //     .collection('notes')
-  //     .onSnapshot(querySnapshot => {
-  //       const notesArray = querySnapshot.docs.map(doc => ({
-  //         id: doc.id,
-  //         ...doc.data()
-  //       })) as Array<{ id: string, text: string }>;
-  //       setNotes(notesArray);
-  //     });
+    // useEffect(() => {
+    //     const unsubscribe = firestore()
+    //         .collection('messages')
+    //         .onSnapshot((querySnapshot) => {
+    //             const messagesList: Array<{ id: string; text: string }> = [];
+    //             querySnapshot.forEach((doc) => {
+    //                 messagesList.push({
+    //                     id: doc.id,
+    //                     text: doc.data().text,
+    //                 });
+    //             });
+    //             setMessages(messagesList);
+    //         });
 
-  //   return () => unsubscribe();
-  // }, []);
+    //     return () => unsubscribe();
+    // }, []);
 
-  const addNote = async () => {
-    if (note.trim()) {
-      await firestore().collection('notes').add({
-        text: note,
-        createdAt: firestore.FieldValue.serverTimestamp()
-      });
-      setNote('');
-    }
-  };
+    const sendMessage = async () => {
+        if (text.trim()) {
+            try {
+                await firestore().collection('messages').add({
+                    text: text.trim(),
+                    createdAt: firestore.FieldValue.serverTimestamp(),
+                });
+                setText('');
+            } catch (error) {
+                console.error('Error sending message: ', error);
+            }
+        }
+    };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Notes Screen</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Write a note"
-        value={note}
-        onChangeText={setNote}
-      />
-      <Button title="Add Note" onPress={addNote} />
-      <FlatList
-        data={notes}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => <Text style={styles.noteText}>{item.text}</Text>}
-      />
-    </View>
-  );
+    return (
+        <View style={styles.container}>
+            <Text style={styles.title}>Firestore Chat</Text>
+            <FlatList
+                data={messages}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                    <View style={styles.message}>
+                        <Text>{item.text}</Text>
+                    </View>
+                )}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Type a message"
+                value={text}
+                onChangeText={setText}
+            />
+            <Button title="Send" onPress={sendMessage} />
+        </View>
+    );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  text: {
-    fontSize: 24,
-    marginBottom: 20,
-  },
-  input: {
-    width: '100%',
-    padding: 10,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 10,
-  },
-  noteText: {
-    fontSize: 18,
-    marginVertical: 5,
-  },
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        padding: 16,
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 16,
+        textAlign: 'center',
+    },
+    input: {
+        height: 40,
+        borderColor: 'gray',
+        borderWidth: 1,
+        marginBottom: 12,
+        paddingLeft: 8,
+    },
+    message: {
+        padding: 8,
+        borderBottomColor: 'gray',
+        borderBottomWidth: 1,
+    },
 });
 
 export default NotesScreen;
